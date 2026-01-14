@@ -33,4 +33,5 @@ Kullanılan Kütüphaneler:
 * WiFi.h: ESP32'nin kablosuz ağ özelliklerini yönetmek ve Access Point (Erişim Noktası) oluşturmak için.
 * WebServer.h: HTTP isteklerini (GET/POST) karşılamak ve HTML arayüzünü yayınlamak için.
 
+YOUTUBE Linki: https://www.youtube.com/shorts/MzI0SJ3nXkc
 KUTAY ÖZTÜRK VE MEHMET EMİN ÇİĞDEM TARAFINDAN YAPILMIŞTIR.
