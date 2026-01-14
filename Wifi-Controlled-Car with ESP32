@@ -1,0 +1,98 @@
+#include <WiFi.h>
+#include <WebServer.h>
+
+const char* ssid = "KUTAY-EMIN-ROBOT";      
+const char* password = "12345678"; 
+
+// MOTOR PİNLERİ
+const int sagIleri = 26; 
+const int sagGeri  = 27;
+const int solIleri = 25; 
+const int solGeri  = 33;
+
+// --- HIZ AYARLARI ---
+int duzHiz = 150;    
+int donusHizi = 150; 
+
+WebServer server(80);
+
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML><html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8"> 
+  <title>KUTAY-EMİN-ROBOT</title>
+  <style>
+    body { font-family: Arial; text-align: center; background-color: #222; color: white; user-select: none; }
+    h1 { margin-top: 20px; color: #FF9800; font-size: 28px; }
+    .btn { display: inline-block; padding: 15px 30px; font-size: 35px; margin: 10px; cursor: pointer; 
+           background: #4CAF50; color: white; border: none; border-radius: 15px; box-shadow: 0 6px #666; -webkit-tap-highlight-color: transparent; width: 100px; }
+    .btn:active { background-color: #3e8e41; box-shadow: 0 2px #666; transform: translateY(4px); }
+    .stop { background-color: #f44336; width: 120px; font-size: 24px; padding: 20px; vertical-align: top; }
+    .row { display: flex; justify-content: center; align-items: center; }
+  </style>
+</head>
+<body>
+  <h1>KUTAY-EMİN-ROBOT</h1>
+  <div><button class="btn" ontouchstart="g('/i')" ontouchend="g('/d')" onmousedown="g('/i')" onmouseup="g('/d')">&#9650;</button></div>
+  <div class="row">
+    <button class="btn" ontouchstart="g('/s')" ontouchend="g('/d')" onmousedown="g('/s')" onmouseup="g('/d')">&#9668;</button>
+    <button class="btn stop" ontouchstart="g('/d')" onmousedown="g('/d')">DUR</button>
+    <button class="btn" ontouchstart="g('/a')" ontouchend="g('/d')" onmousedown="g('/a')" onmouseup="g('/d')">&#9658;</button>
+  </div>
+  <div><button class="btn" ontouchstart="g('/g')" ontouchend="g('/d')" onmousedown="g('/g')" onmouseup="g('/d')">&#9660;</button></div>
+  <script>
+    function g(y) { var x = new XMLHttpRequest(); x.open("GET", y, true); x.send(); }
+    document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+  </script>
+</body>
+</html>
+)rawliteral";
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(sagIleri, OUTPUT); pinMode(sagGeri, OUTPUT);
+  pinMode(solIleri, OUTPUT); pinMode(solGeri, OUTPUT);
+  
+  WiFi.softAP(ssid, password);
+  
+  server.on("/", [](){ server.send(200, "text/html", index_html); });
+  server.on("/i", ileri);
+  server.on("/g", geri);
+  server.on("/s", sol);
+  server.on("/a", sag); 
+  server.on("/d", dur);
+  server.begin();
+}
+
+void loop() { server.handleClient(); }
+
+
+
+void ileri() {
+  analogWrite(sagIleri, duzHiz); digitalWrite(sagGeri, LOW);
+  analogWrite(solIleri, duzHiz); digitalWrite(solGeri, LOW);
+}
+
+void geri() {
+  digitalWrite(sagIleri, LOW); analogWrite(sagGeri, duzHiz);
+  digitalWrite(solIleri, LOW); analogWrite(solGeri, duzHiz);
+}
+
+void sag() {
+  analogWrite(sagIleri, donusHizi); digitalWrite(sagGeri, LOW); // Sağ İT
+  digitalWrite(solIleri, LOW); digitalWrite(solGeri, LOW); // Sol DUR
+}
+
+
+void sol() {
+  digitalWrite(sagIleri, LOW); digitalWrite(sagGeri, LOW); // Sağ DUR
+  analogWrite(solIleri, donusHizi); digitalWrite(solGeri, LOW); // Sol İT
+}
+
+void dur() {
+  digitalWrite(sagIleri, LOW); digitalWrite(sagGeri, LOW);
+  digitalWrite(solIleri, LOW); digitalWrite(solGeri, LOW);
+  analogWrite(sagIleri, 0); analogWrite(sagGeri, 0);
+  analogWrite(solIleri, 0); analogWrite(solGeri, 0);
+}
